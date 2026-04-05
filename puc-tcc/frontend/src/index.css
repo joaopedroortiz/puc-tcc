@@ -1,88 +1,126 @@
+/* index.css */
+
 :root {
-  font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
-  background-color: #f0f2f5;
-  color: #333;
+  --marinho: #1B263B;
+  --royal: #415A77;
+  --gelo: #E0E1DD;
+  --branco: #FFFFFF;
+  --coral: #FF4D4D;
 }
 
+/* Configurações Globais */
 body {
   margin: 0;
-  display: block; /* Remove o flex do Vite */
-  min-width: 320px;
-  min-height: 100vh;
+  padding: 0;
+  padding-top: 75px; /* Espaço para o Header de 50px + respiro */
+  background-color: var(--gelo);
+  color: var(--marinho);
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  -webkit-font-smoothing: antialiased;
 }
 
 .app-container {
-  max-width: 1000px;
+  max-width: 900px;
   margin: 0 auto;
-  padding: 20px;
-
-  
+  padding: 0 20px;
 }
 
-body {
-  font-family: system-ui, -apple-system, sans-serif;
-  margin: 0;
-  background-color: #f4f7f6;
-}
-
-.app-container {
+/* Estilização da Timeline e Cards */
+.timeline {
+  width: 100%;
   max-width: 800px;
   margin: 0 auto;
 }
 
-select {
-  padding: 8px;
-  border-radius: 4px;
-  border: 1px solid #ccc;
-}
-
-
-.home-header {
-  text-align: center;
-  padding: 40px 20px;
-  background: white;
-  border-bottom: 1px solid #ddd;
-  margin-bottom: 20px;
-}
-
-.search-bar {
-  display: flex;
-  gap: 10px;
-  justify-content: center;
-  margin-top: 20px;
-}
-
-.search-bar input, .search-bar select {
-  padding: 12px;
-  border: 1px solid #ccc;
-  border-radius: 6px;
-}
-
-.timeline {
-  max-width: 700px;
-  margin: 0 auto;
+.timeline h2 {
+  color: var(--marinho);
+  font-weight: 700;
+  margin-bottom: 25px;
 }
 
 .mission-card {
-  background: white;
-  padding: 20px;
-  border-radius: 10px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-  margin-bottom: 15px;
-  border-left: 5px solid #007bff; /* Destaque azul */
+  background: var(--branco);
+  padding: 24px;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(27, 38, 59, 0.08);
+  margin-bottom: 20px;
+  border-left: 6px solid var(--marinho); /* Destaque no Azul Marinho */
+  transition: transform 0.2s ease;
+}
+
+.mission-card:hover {
+  transform: translateY(-2px);
 }
 
 .mission-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  margin-bottom: 12px;
 }
 
-.btn-proposta {
-  background: #007bff;
-  color: white;
+.mission-header h3 {
+  margin: 0;
+  color: var(--marinho);
+  font-size: 1.25rem;
+}
+
+.mission-card p {
+  color: var(--royal);
+  line-height: 1.5;
+  margin-bottom: 20px;
+}
+
+/* Badges e Status */
+.status-badge {
+  background-color: var(--gelo);
+  color: var(--royal);
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+/* Botões (Usando o Laranja Coral para CTA) */
+.btn-proposta, .btn-cta {
+  background-color: var(--coral);
+  color: var(--branco);
   border: none;
-  padding: 8px 16px;
-  border-radius: 5px;
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-weight: 700;
   cursor: pointer;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.btn-proposta:hover, .btn-cta:hover {
+  filter: brightness(0.9);
+  box-shadow: 0 4px 12px rgba(255, 77, 77, 0.3);
+}
+
+.btn-proposta:active {
+  transform: scale(0.98);
+}
+
+/* Utilitários */
+.empty-msg {
+  text-align: center;
+  color: var(--royal);
+  padding: 40px;
+  background: rgba(255, 255, 255, 0.5);
+  border-radius: 12px;
+  border: 2px dashed var(--royal);
+}
+
+select {
+  padding: 8px;
+  border-radius: 6px;
+  border: 1px solid var(--gelo);
+  background-color: var(--branco);
+  color: var(--marinho);
+  font-family: inherit;
 }

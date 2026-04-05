@@ -1,0 +1,76 @@
+/* Login.css */
+.login-wrapper {
+  height: 100vh;
+  width: 100vw;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: #E5E2D9; /* Tom cinza bege pastel opaco */
+  margin: 0;
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 2000; /* Garante que cubra o Header se ele estiver montado */
+}
+
+.login-modal {
+  width: 70%;
+  max-width: 800px;
+  min-height: 450px;
+  background-color: #FFFFFF;
+  border-radius: 20px;
+  box-shadow: 0 15px 35px rgba(27, 38, 59, 0.1);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-around;
+  padding: 40px;
+  text-align: center;
+}
+
+.login-logo {
+  height: 220px;
+  margin-bottom: -170px;
+}
+
+.login-body h2 {
+  color: #1B263B; /* Azul Marinho */
+  font-size: 1.8rem;
+  margin-bottom: 15px;
+}
+
+.login-body p {
+  color: #415A77; /* Azul Royal */
+  font-size: 1.1rem;
+  line-height: 1.6;
+  max-width: 80% ;
+  margin: 0 auto;
+}
+
+/* Botão do Google estilizado com sua paleta */
+.btn-google {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background-color: #FFFFFF;
+  color: #1B263B;
+  border: 2px solid #E0E1DD;
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.btn-google img {
+  width: 20px;
+  height: 20px;
+}
+
+.btn-google:hover {
+  background-color: #F8F9FA;
+  border-color: #FF4D4D; /* Laranja Coral no hover */
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(255, 77, 77, 0.15);
+}

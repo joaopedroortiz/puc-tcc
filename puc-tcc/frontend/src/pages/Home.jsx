@@ -1,86 +1,73 @@
-import { useEffect, useState } from 'react'
-import { supabase } from '../services/supabaseClient'
+import { useEffect, useState } from 'react';
+import { supabase } from '../services/supabaseClient';
 
-export function Home() {
-  const [missions, setMissions] = useState([])
-  const [city, setCity] = useState('Porto Alegre') // Cidade inicial
-  const [searchTerm, setSearchTerm] = useState('')
-  const [loading, setLoading] = useState(true)
+export function Home({ city }) {
+  const [missions, setMissions] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  // Lista de cidades para o dropdown (exemplo RS)
-  const cities = ['Porto Alegre', 'Canoas', 'Novo Hamburgo', 'Pelotas', 'Caxias do Sul', 'Santa Maria']
-
-  // Função para buscar missões no Supabase
+  // Função para buscar missões filtradas pela cidade do cabeçalho
   const fetchMissions = async () => {
-    setLoading(true)
-    let query = supabase
-      .from('missions')
-      .select(`
-        *,
-        profiles (full_name, avatar_url)
-      `)
-      .eq('city', city) // Filtro de Cidade
-      .order('created_at', { ascending: false }) // Ordem Cronológica
+    setLoading(true);
+    try {
+      const { data, error } = await supabase
+        .from('missions')
+        .select(`
+          *,
+          profiles (full_name, avatar_url)
+        `)
+        .eq('city', city) // Filtro dinâmico vindo da Prop
+        .order('created_at', { ascending: false });
 
-    if (searchTerm) {
-      query = query.ilike('title', `%${searchTerm}%`) // Busca por texto no título
+      if (error) throw error;
+      setMissions(data || []);
+    } catch (error) {
+      console.error("Erro ao carregar missões:", error.message);
+    } finally {
+      setLoading(false);
     }
+  };
 
-    const { data, error } = await query
-    
-    if (error) console.error("Erro ao buscar:", error)
-    else setMissions(data)
-    setLoading(false)
-  }
-
-  // Executa a busca sempre que a cidade mudar
+  // IMPORTANTE: Sempre que a 'city' mudar no Navbar, o useEffect dispara a busca
   useEffect(() => {
-    fetchMissions()
-  }, [city])
+    fetchMissions();
+  }, [city]);
 
   return (
     <div className="home-container">
-      {/* 1. Cabeçalho e Busca */}
-      <header className="home-header">
-        <h1>Mission-Based Work</h1>
-        <div className="search-bar">
-          <input 
-            type="text" 
-            placeholder="O que você precisa?" 
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-          />
-          <select value={city} onChange={(e) => setCity(e.target.value)}>
-            {cities.map(c => <option key={c} value={c}>{c}</option>)}
-          </select>
-          <button onClick={fetchMissions}>Pesquisar</button>
-        </div>
-      </header>
-
-      {/* 2. Timeline (Resultados) */}
       <section className="timeline">
-        <h2>Missões em {city}</h2>
+        <h2 className="timeline-title">Missões disponíveis em {city}</h2>
         
         {loading ? (
-          <p>Carregando missões...</p>
+          <div className="loading-state">Buscando oportunidades...</div>
         ) : missions.length > 0 ? (
-          missions.map(mission => (
-            <div key={mission.id} className="mission-card">
-              <div className="mission-header">
-                <h3>{mission.title}</h3>
-                <span className="status-badge">{mission.status}</span>
+          <div className="mission-list">
+            {missions.map((mission) => (
+              <div key={mission.id} className="mission-card">
+                <div className="mission-header">
+                  <h3>{mission.title}</h3>
+                  <span className="status-badge">{mission.status}</span>
+                </div>
+                
+                <p className="mission-description">{mission.description}</p>
+                
+                <div className="mission-footer">
+                  <div className="user-info">
+                    <small>Postado por:</small>
+                    <span>{mission.profiles?.full_name || 'Usuário'}</span>
+                  </div>
+                  {/* Botão com a cor Coral (#FF4D4D) via CSS */}
+                  <button className="btn-proposta">Ver Lances</button>
+                </div>
               </div>
-              <p>{mission.description}</p>
-              <div className="mission-footer">
-                <small>Postado por: {mission.profiles?.full_name || 'Usuário'}</small>
-                <button className="btn-proposta">Enviar Proposta</button>
-              </div>
-            </div>
-          ))
+            ))}
+          </div>
         ) : (
-          <p className="empty-msg">Nenhuma missão encontrada para esta busca em {city}.</p>
+          <div className="empty-msg">
+            <p>Ainda não há missões abertas em {city}.</p>
+            <span>Seja o primeiro a publicar uma necessidade!</span>
+          </div>
         )}
       </section>
     </div>
-  )
+  );
 }
