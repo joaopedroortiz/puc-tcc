@@ -1,0 +1,80 @@
+.profile-card {
+  background-color: var(--branco);
+  border-radius: 12px;
+  padding: 20px;
+  width: 260px; /* Tamanho fixo para a lateral */
+  height: fit-content;
+  box-shadow: 0 4px 12px rgba(27, 38, 59, 0.08);
+  border-top: 4px solid var(--marinho);
+  position: sticky;
+  top: 70px; /* Fica fixo ao rolar a página */
+}
+
+.profile-header {
+  text-align: center;
+  border-bottom: 1px solid var(--gelo);
+  padding-bottom: 15px;
+  margin-bottom: 15px;
+}
+
+.profile-avatar-large {
+  width: 70px;
+  height: 70px;
+  border-radius: 50%;
+  border: 3px solid var(--gelo);
+  margin-bottom: 10px;
+}
+
+.profile-header h3 {
+  margin: 0;
+  color: var(--marinho);
+  font-size: 1.2rem;
+}
+
+.profile-email {
+  font-size: 0.8rem;
+  color: var(--royal);
+  margin: 5px 0 0;
+}
+
+.profile-details {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.detail-item label {
+  display: block;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--royal);
+  margin-bottom: 4px;
+  text-transform: uppercase;
+}
+
+.detail-item input, .detail-item textarea {
+  width: 100%;
+  padding: 8px;
+  border: 1px solid var(--gelo);
+  border-radius: 6px;
+  font-size: 0.85rem;
+  color: var(--marinho);
+  box-sizing: border-box;
+}
+
+.btn-save-profile {
+  margin-top: 15px;
+  width: 100%;
+  background-color: var(--marinho);
+  color: var(--branco);
+  border: none;
+  padding: 10px;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+
+.btn-save-profile:hover {
+  opacity: 0.9;
+}

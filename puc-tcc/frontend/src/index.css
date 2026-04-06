@@ -12,30 +12,43 @@
 body {
   margin: 0;
   padding: 0;
-  padding-top: 75px; /* Espaço para o Header de 50px + respiro */
+  padding-top: 75px; /* Espaço para o Header fixo */
   background-color: var(--gelo);
   color: var(--marinho);
   font-family: 'Inter', system-ui, -apple-system, sans-serif;
   -webkit-font-smoothing: antialiased;
 }
 
+/* Alterado para suportar o layout de duas colunas */
 .app-container {
-  max-width: 900px;
+  max-width: 1100px; /* Aumentado para comportar ProfileCard + Timeline */
   margin: 0 auto;
   padding: 0 20px;
+}
+
+/* NOVO: Classe para alinhar os componentes lado a lado */
+.main-layout {
+  display: flex;
+  gap: 30px; /* Espaço entre o card de perfil e as missões */
+  align-items: flex-start; /* Mantém o card no topo mesmo com rolagens */
+  margin-top: 20px;
+}
+
+/* NOVO: Garante que a área da direita ocupe o resto do espaço */
+.content-area {
+  flex: 1;
 }
 
 /* Estilização da Timeline e Cards */
 .timeline {
   width: 100%;
-  max-width: 800px;
-  margin: 0 auto;
 }
 
 .timeline h2 {
   color: var(--marinho);
   font-weight: 700;
   margin-bottom: 25px;
+  font-size: 1.5rem;
 }
 
 .mission-card {
@@ -44,7 +57,7 @@ body {
   border-radius: 12px;
   box-shadow: 0 4px 12px rgba(27, 38, 59, 0.08);
   margin-bottom: 20px;
-  border-left: 6px solid var(--marinho); /* Destaque no Azul Marinho */
+  border-left: 6px solid var(--marinho);
   transition: transform 0.2s ease;
 }
 
@@ -124,3 +137,18 @@ select {
   color: var(--marinho);
   font-family: inherit;
 }
+
+.custom-dropdown li {
+  padding: 12px 15px;
+  cursor: pointer;
+  transition: background 0.2s;
+  color: var(--marinho);
+  font-size: 0.9rem;
+}
+
+.custom-dropdown li:hover {
+  background-color: var(--gelo);
+}
+
+/* Se clicar em "Meu Perfil", podemos esconder o card da esquerda 
+   ou destacar o conteúdo central. */

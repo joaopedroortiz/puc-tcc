@@ -7,7 +7,7 @@ import logoImg from '../assets/wtd.svg';
 import userImg from '../assets/user.png';
 import localImg from '../assets/local.png';
 
-export const Navbar = ({ city, setCity }) => {
+export const Navbar = ({ city, setCity, setPage }) => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
   // Lista de cidades do Rio Grande do Sul
@@ -18,19 +18,25 @@ export const Navbar = ({ city, setCity }) => {
     if (error) console.error("Erro ao sair:", error.message);
   };
 
+  // Função auxiliar para navegar e fechar o menu simultaneamente
+  const navigateTo = (pageName) => {
+    setPage(pageName);
+    setIsDropdownOpen(false);
+  };
+
   return (
     <header className="main-header">
       <div className="header-content">
         
-        {/* Lado Esquerdo: Logo */}
-        <div className="header-left">
+        {/* Lado Esquerdo: Logo - Clicar no logo volta para a Home */}
+        <div className="header-left" onClick={() => setPage('home')} style={{ cursor: 'pointer' }}>
           <img src={logoImg} alt="Mission-Based Work" className="logo-img" />
         </div>
 
         {/* Lado Direito: Localização e Perfil */}
         <div className="header-right">
           
-          {/* Bloco de Localização (Alinhado à direita junto ao user) */}
+          {/* Bloco de Localização */}
           <div className="location-group">
             <img src={localImg} alt="Local" className="icon-local" />
             <select 
@@ -56,8 +62,10 @@ export const Navbar = ({ city, setCity }) => {
             {isDropdownOpen && (
               <div className="custom-dropdown">
                 <ul>
-                  <li>Minhas Missões</li>
-                  <li>Concluídos</li>
+                  <li onClick={() => navigateTo('perfil')}>Meu Perfil</li>
+                  <li onClick={() => navigateTo('minhas-missoes')}>Minhas Missões</li>
+                  <li onClick={() => navigateTo('minhas-propostas')}>Minhas Propostas</li>
+                  <li onClick={() => navigateTo('concluidos')}>Concluídos</li>
                   <li className="logout-opt" onClick={handleLogout}>Sair</li>
                 </ul>
               </div>
