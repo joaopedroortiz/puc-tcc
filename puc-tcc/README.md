@@ -25,14 +25,11 @@ gh repo clone joaopedroortiz/puc-tcc
 
 npm install
 
-3. Configure as variáveis de ambiente
-
-Crie um arquivo .env na raiz e adicione suas chaves do Supabase:
+3. Confirme se as variáveis de ambiente foram baixadas corretamente no arquivo .env no padrão abaixo:
 
 VITE_SUPABASE_URL=sua_url_aqui
 VITE_SUPABASE_ANON_KEY=sua_chave_aqui
-Inicie o servidor de desenvolvimento:
 
-4. Rode a Aplicação
+4. Rode a Aplicação com o comando:
 
 npm run dev
