@@ -4,13 +4,13 @@ O **Work To Do** é uma plataforma Full Stack de intermediação de serviços ba
 
 ## 🚀 Tecnologias Utilizadas
 
-* [cite_start]**Front-end:** React.js, Vite, CSS3 (Variáveis nativas e Flexbox). [cite: 2]
-* [cite_start]**Backend-as-a-Service:** Supabase (PostgreSQL, Auth, RLS). [cite: 2]
+* **Front-end:** React.js, Vite, CSS3 (Variáveis nativas e Flexbox).
+* **Backend-as-a-Service:** Supabase (PostgreSQL, Auth, RLS).
 * **Autenticação:** Google OAuth 2.0.
 
 ## 🛠️ Funcionalidades
 
-- [cite_start]**Dashboard de Missões:** Listagem dinâmica filtrada por cidade. [cite: 2]
+- **Dashboard de Missões:** Listagem dinâmica filtrada por cidade. 
 - **Gestão de Perfil:** Sistema de completude de perfil para aumentar a confiabilidade.
 - **Lances em Tempo Real:** Usuários podem ofertar propostas para missões abertas.
 - **Segurança:** Políticas de *Row Level Security* (RLS) garantem que apenas o dono do perfil edite seus dados.
