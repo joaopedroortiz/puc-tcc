@@ -2,12 +2,13 @@ import React, { useState } from 'react';
 import { supabase } from '../services/supabaseClient';
 import './Header.css';
 
-// Importação das imagens conforme solicitado
+// Importação das imagens
 import logoImg from '../assets/wtd.svg';
 import userImg from '../assets/user.png';
 import localImg from '../assets/local.png';
 
-export const Navbar = ({ city, setCity, setPage }) => {
+// Adicionada a prop 'page' para controle de exibição
+export const Navbar = ({ city, setCity, setPage, page }) => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
   // Lista de cidades do Rio Grande do Sul
@@ -18,7 +19,6 @@ export const Navbar = ({ city, setCity, setPage }) => {
     if (error) console.error("Erro ao sair:", error.message);
   };
 
-  // Função auxiliar para navegar e fechar o menu simultaneamente
   const navigateTo = (pageName) => {
     setPage(pageName);
     setIsDropdownOpen(false);
@@ -36,27 +36,39 @@ export const Navbar = ({ city, setCity, setPage }) => {
         {/* Lado Direito: Localização e Perfil */}
         <div className="header-right">
           
-          {/* Bloco de Localização */}
-          <div className="location-group">
-            <img src={localImg} alt="Local" className="icon-local" />
-            <select 
-              className="city-dropdown" 
-              value={city} 
-              onChange={(e) => setCity(e.target.value)}
-            >
-              {cities.map(c => (
-                <option key={c} value={c}>{c}</option>
-              ))}
-            </select>
-          </div>
+          {/* LÓGICA: Só exibe o botão e a localização se a página for 'home' */}
+          {page === 'home' && (
+            <>
+              <button 
+                className="btn-create-mission" 
+                onClick={() => setPage('criar-missao')}
+              >
+                + Nova Missão
+              </button>
 
-          {/* Menu do Usuário */}
+              <div className="location-group">
+                <img src={localImg} alt="Local" className="icon-local" />
+                <select 
+                  className="city-dropdown" 
+                  value={city} 
+                  onChange={(e) => setCity(e.target.value)}
+                >
+                  {cities.map(c => (
+                    <option key={c} value={c}>{c}</option>
+                  ))}
+                </select>
+              </div>
+            </>
+          )}
+
+          {/* Menu do Usuário - Disponível em todas as páginas */}
           <div className="user-menu-container">
             <img 
               src={userImg} 
               alt="Usuário" 
               className="user-avatar" 
               onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+              style={{ cursor: 'pointer' }}
             />
             
             {isDropdownOpen && (

@@ -4,7 +4,8 @@ import { Login } from './pages/Login';
 import { Home } from './pages/Home';
 import Navbar from './components/Navbar';
 import { ProfileCard } from './components/Card';
-import { EditProfile } from './pages/Edit'; // Importe a nova página de edição
+import { EditProfile } from './pages/Edit';
+import { CreateMission } from './pages/CreateMission'; // Importando a nova página
 
 // Placeholders para as outras páginas
 const MyMissions = () => <div className="timeline"><h2 className="timeline-title">Minhas Missões</h2><p>Gerencie as missões que você postou.</p></div>;
@@ -30,14 +31,22 @@ function App() {
     return () => subscription.unsubscribe();
   }, []);
 
-  // Função que decide o que renderizar na área de conteúdo (direita ou centro)
+  // Função que decide o que renderizar na área de conteúdo
   const renderPage = () => {
     switch (page) {
       case 'home':
         return <Home city={city} />;
       case 'perfil':
-        // Renderiza a página de edição centralizada
         return <EditProfile user={session.user} />;
+      case 'criar-missao': // Nova rota para criação de missão
+        return (
+          <CreateMission 
+            user={session.user} 
+            currentCity={city} 
+            setPage={setPage} 
+            setGlobalCity={setCity} // Para alinhar a cidade da missão com o filtro global
+          />
+        );
       case 'minhas-missoes':
         return <MyMissions />;
       case 'minhas-propostas':
@@ -53,20 +62,17 @@ function App() {
     return <Login />;
   }
 
+  // Definimos se a página atual deve esconder o ProfileCard e centralizar o conteúdo
+  const isFullWidthPage = page === 'perfil' || page === 'criar-missao';
+
   return (
     <div className="app-main-wrapper">
-      <Navbar city={city} setCity={setCity} setPage={setPage} />
+      <Navbar city={city} setCity={setCity} setPage={setPage} page={page}/>
       
-      {/* A classe 'main-layout' gerencia o Flexbox.
-          Se estivermos na página 'perfil', adicionamos uma classe extra 
-          para centralizar o conteúdo único.
-      */}
-      <main className={`app-container main-layout ${page === 'perfil' ? 'centered-layout' : ''}`}>
+      <main className={`app-container main-layout ${isFullWidthPage ? 'centered-layout' : ''}`}>
         
-        {/* LÓGICA SOLICITADA: 
-            O Card da esquerda só aparece se NÃO estivermos na página de perfil.
-        */}
-        {page !== 'perfil' && (
+        {/* O Card da esquerda não aparece em páginas de formulário (Perfil ou Criar Missão) */}
+        {!isFullWidthPage && (
           <ProfileCard user={session.user} setPage={setPage} />
         )}
 
