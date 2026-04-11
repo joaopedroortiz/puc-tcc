@@ -12,35 +12,48 @@ export const CreateMission = ({ user, currentCity, setPage }) => {
     deadline: ''
   });
 
-  const handlePublish = async (e) => {
-    e.preventDefault();
-    setLoading(true);
+ const handlePublish = async (e) => {
+  e.preventDefault();
+  if (loading) return; // Proteção extra
 
-    try {
-      const { error } = await supabase
-        .from('missions')
-        .insert([{
-          user_id: user.id,
-          title: formData.title,
-          description: formData.description,
-          city: formData.city,
-          neighborhood: formData.neighborhood,
-          price: formData.expected_value || null,
-          deadline: formData.deadline || null,
-          status: 'Aberto'
-          // O created_at o Supabase gera sozinho (Default: now())
-        }]);
+  setLoading(true);
 
-      if (error) throw error;
-      
-      alert("Missão publicada com sucesso!");
-      setPage('home'); // Volta para a home para ver a missão criada
-    } catch (error) {
-      alert("Erro ao publicar: " + error.message);
-    } finally {
-      setLoading(false);
-    }
-  };
+  try {
+    const { error } = await supabase
+      .from('missions')
+      .insert([{
+        user_id: user.id,
+        title: formData.title,
+        description: formData.description,
+        city: formData.city,
+        neighborhood: formData.neighborhood,
+        price: formData.expected_value || null,
+        deadline: formData.deadline || null,
+        status: 'Aberto'
+      }]);
+
+    if (error) throw error;
+    
+    // Feedback de Sucesso
+    alert("🚀 Missão publicada com sucesso!");
+    
+    // Resetar o formulário antes de sair
+    setFormData({
+      title: '',
+      description: '',
+      city: currentCity,
+      neighborhood: '',
+      expected_value: '',
+      deadline: ''
+    });
+
+    setPage('home'); 
+  } catch (error) {
+    alert("Erro ao publicar: " + error.message);
+  } finally {
+    setLoading(false);
+  }
+};
 
   return (
     <div className="edit-profile-container">
@@ -112,9 +125,17 @@ export const CreateMission = ({ user, currentCity, setPage }) => {
             </div>
           </div>
 
-          <button type="submit" className="btn-cta" disabled={loading}>
-            {loading ? 'Publicando...' : 'Publicar Missão'}
-          </button>
+                <button 
+            type="submit" 
+            className={`btn-cta ${loading ? 'btn-loading' : ''}`} 
+            disabled={loading}
+            >
+            {loading ? (
+                <span className="spinner-text">Publicando missão...</span>
+            ) : (
+                "Publicar Missão"
+            )}
+            </button>
         </form>
       </div>
     </div>
