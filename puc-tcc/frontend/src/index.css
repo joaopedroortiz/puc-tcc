@@ -204,11 +204,15 @@ body {
 
 .mission-card {
   background: var(--branco);
-  padding: 24px;
+  padding: 12px;
   border-radius: 12px;
-  /* ... resto do código ... */
+  margin-bottom: 20px;
 }
 
+.mission-header h3{
+margin-top: 0px;
+margin-bottom: 10px;
+}
 .incomplete-profile-msg {
   background-color: rgba(255, 77, 77, 0.05);
   border: 1px dashed var(--coral);
@@ -247,4 +251,8 @@ body {
   border: 1px solid var(--gelo);
   border-radius: 8px;
   background: white;
+}
+
+.timeline-title{
+  margin-top: 0px;
 }
