@@ -1,10 +1,11 @@
 import React from 'react';
 
-// Adicionamos a prop 'user' para saber quem está logado
 export const MissionCard = ({ mission, user, setPage, setSelectedMission }) => {
   
-  // Verifica se o usuário logado é o dono da missão
   const isMyMission = user?.id === mission?.user_id;
+  
+  // Pega a quantidade de propostas do array que agora vem na query
+  const numProposals = mission.proposals?.length || 0;
 
   const handleAccess = () => {
     if (setSelectedMission) {
@@ -40,12 +41,18 @@ export const MissionCard = ({ mission, user, setPage, setSelectedMission }) => {
 
   return (
     <div className="mission-card">
-      <div className="mission-header">
-        {/* Adiciona um pequeno indicador visual no card da timeline também */}
+      <div className="mission-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
         <h3>
           {mission.title} 
           {isMyMission && <span style={{fontSize: '0.6rem', marginLeft: '8px', color: '#0369a1', verticalAlign: 'middle'}}>(Sua)</span>}
         </h3>
+
+        {/* INDICADOR DE PROPOSTAS: Só aparece se for a minha missão e houver propostas */}
+        {isMyMission && numProposals > 0 && (
+          <div className="proposals-badge-card" title={`${numProposals} propostas recebidas`}>
+            📩 {numProposals}
+          </div>
+        )}
       </div>
 
       <p className="mission-card-p">
@@ -63,7 +70,6 @@ export const MissionCard = ({ mission, user, setPage, setSelectedMission }) => {
             Acessar
           </button>
           
-          {/* Lógica do botão de proposta */}
           <button 
             className="btn-main-action" 
             onClick={handleAccess}

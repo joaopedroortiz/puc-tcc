@@ -1,0 +1,115 @@
+.public-profile-container {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.profile-header-card {
+  background: white;
+  border-radius: 16px;
+  padding: 40px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  text-align: center;
+  border: 1px solid #e2e8f0;
+}
+
+.profile-avatar-large {
+  width: 120px;
+  height: 120px;
+  background: linear-gradient(135deg, #0369a1 0%, #075985 100%);
+  color: white;
+  border-radius: 50%;
+  margin: 0 auto 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 3rem;
+  font-weight: bold;
+  box-shadow: 0 10px 15px -3px rgba(3, 105, 161, 0.3);
+}
+
+.profile-name {
+  font-size: 2rem;
+  color: #1e293b;
+  margin-bottom: 8px;
+}
+
+.profile-badge {
+  display: inline-block;
+  background: #f0fdf4;
+  color: #166534;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  margin-bottom: 30px;
+}
+
+.profile-info-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  text-align: left;
+  margin-bottom: 30px;
+  border-top: 1px solid #f1f5f9;
+  padding-top: 30px;
+}
+
+.info-item .info-label {
+  display: block;
+  font-size: 0.75rem;
+  color: #64748b;
+  font-weight: bold;
+  margin-bottom: 5px;
+}
+
+.info-item .info-value {
+  font-size: 1rem;
+  color: #334155;
+}
+
+.profile-bio-section {
+  text-align: left;
+  background: #f8fafc;
+  padding: 20px;
+  border-radius: 12px;
+  margin-bottom: 30px;
+}
+
+.profile-bio-section h3 {
+  font-size: 1rem;
+  color: #1e293b;
+  margin-bottom: 10px;
+}
+
+.profile-bio-section p {
+  color: #475569;
+  line-height: 1.6;
+}
+
+.profile-status-container {
+  text-align: center;
+  padding: 100px 20px;
+}
+
+.loader {
+  border: 4px solid #f3f3f3;
+  border-top: 4px solid #0369a1;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  animation: spin 1s linear infinite;
+  margin: 0 auto 20px;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Responsivo */
+@media (max-width: 600px) {
+  .profile-info-grid {
+    grid-template-columns: 1fr;
+  }
+}

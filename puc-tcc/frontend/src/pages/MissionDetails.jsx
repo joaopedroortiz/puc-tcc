@@ -2,48 +2,80 @@ import React, { useState, useEffect } from 'react';
 import { supabase } from '../services/supabaseClient';
 import { ProposalModal } from '../components/ProposalModal';
 
-export const MissionDetails = ({ mission, user, setPage }) => {
+export const MissionDetails = ({ mission, user, setPage, setTargetUserId }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [proposals, setProposals] = useState([]); // Agora guardamos a lista de propostas
+  const [proposals, setProposals] = useState([]);
   const [loadingProposals, setLoadingProposals] = useState(true);
 
   const isMyMission = user?.id === mission?.user_id;
   const isFinished = mission?.is_active === false;
 
+  const fetchProposalsData = async () => {
+    setLoadingProposals(true);
+    try {
+      // Nota: Estamos buscando dados da tabela 'proposals' e fazendo join com 'profiles'
+      // Certifique-se de que sua tabela de perfis se chama 'profiles' no Supabase
+      const { data, error } = await supabase
+        .from('proposals')
+        .select(`
+          id,
+          price,
+          message,
+          created_at,
+          user_id,
+          status,
+          profiles:user_id (
+            full_name,
+            email,
+            phone
+          )
+        `)
+        .eq('mission_id', mission.id)
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      setProposals(data || []);
+    } catch (error) {
+      console.error("Erro ao carregar propostas:", error.message);
+    } finally {
+      setLoadingProposals(false);
+    }
+  };
+
   useEffect(() => {
-    if (!mission?.id) return;
-
-    const fetchProposalsData = async () => {
-      setLoadingProposals(true);
-      try {
-        // Buscamos as propostas e os perfis de quem as fez
-        const { data, error } = await supabase
-          .from('proposals')
-          .select(`
-            id,
-            price,
-            message,
-            created_at,
-            user_id
-          `)
-          .eq('mission_id', mission.id)
-          .order('created_at', { ascending: false });
-
-        if (error) throw error;
-        setProposals(data || []);
-      } catch (error) {
-        console.error("Erro ao carregar propostas:", error.message);
-      } finally {
-        setLoadingProposals(false);
-      }
-    };
-
-    fetchProposalsData();
+    if (mission?.id) fetchProposalsData();
   }, [mission?.id]);
+
+  const handleAcceptProposal = async (proposalId) => {
+    const confirm = window.confirm("Deseja aceitar esta proposta? O prestador será notificado.");
+    if (!confirm) return;
+
+    try {
+      const { error } = await supabase
+        .from('proposals')
+        .update({ status: 'accepted' })
+        .eq('id', proposalId);
+
+      if (error) throw error;
+
+      // Opcional: Você pode querer finalizar a missão automaticamente ao aceitar uma proposta
+      // await supabase.from('missions').update({ is_active: false }).eq('id', mission.id);
+
+      alert("Proposta aceita com sucesso!");
+      fetchProposalsData(); // Recarrega a lista para mostrar o status atualizado
+    } catch (error) {
+      alert("Erro ao aceitar proposta: " + error.message);
+    }
+  };
+
+  const handleViewProfile = (userId) => {
+    setTargetUserId(userId); // Seta o ID do usuário que queremos ver
+    setPage('perfil-publico'); // Muda para a página de perfil
+  };
 
   if (!mission) {
     return (
-      <div className="details-container" style={{textAlign: 'center', padding: '50px'}}>
+      <div className="details-container" style={{ textAlign: 'center', padding: '50px' }}>
         <h2>A carregar detalhes...</h2>
         <button className="btn-secondary-action" onClick={() => setPage('home')}>Voltar</button>
       </div>
@@ -53,11 +85,10 @@ export const MissionDetails = ({ mission, user, setPage }) => {
   return (
     <div className="details-container">
       <button className="btn-back-nav" onClick={() => setPage('home')}>
-        ← Voltar para a Timeline
+        ← Home
       </button>
-      
+
       <div className="details-card">
-        {/* ... (Todo o seu cabeçalho e meta-grid permanecem iguais) ... */}
         <header className="details-header">
           <div className="title-group">
             {isMyMission && <span className="own-mission-tag">SUA MISSÃO</span>}
@@ -72,7 +103,7 @@ export const MissionDetails = ({ mission, user, setPage }) => {
         </div>
 
         <div className="details-meta-grid">
-           <div className="meta-box">
+          <div className="meta-box">
             <span className="meta-label">📍 LOCALIZAÇÃO</span>
             <span className="meta-value">{mission.neighborhood}, {mission.city}</span>
           </div>
@@ -98,13 +129,19 @@ export const MissionDetails = ({ mission, user, setPage }) => {
 
         <div className="details-actions">
           {isFinished ? (
-            <div className="finished-info-box">
-              <p>Esta missão foi finalizada.</p>
+            <div className="finished-info-box" style={{ textAlign: 'center', width: '100%', padding: '15px', background: '#f1f5f9', borderRadius: '8px' }}>
+              <p style={{ color: '#475569', fontWeight: 'bold' }}>MISSÃO FINALIZADA</p>
             </div>
           ) : isMyMission ? (
             <div style={{ display: 'flex', gap: '12px', width: '100%' }}>
               <button className="btn-secondary-action" style={{ flex: 1 }}>✏️ Editar</button>
-              <button className="btn-main-action" style={{ flex: 1, backgroundColor: '#16a34a' }}>✅ Finalizar</button>
+              <button 
+                className="btn-main-action" 
+                style={{ flex: 1, backgroundColor: '#16a34a' }}
+                onClick={() => alert("Use o botão 'Aceitar' em uma proposta abaixo para finalizar.")}
+              >
+                ✅ Finalizar
+              </button>
             </div>
           ) : (
             <button className="btn-main-action btn-large" onClick={() => setIsModalOpen(true)}>
@@ -114,7 +151,6 @@ export const MissionDetails = ({ mission, user, setPage }) => {
         </div>
       </div>
 
-      {/* SEÇÃO DE PROPOSTAS RECEBIDAS (Aparece apenas para o dono ou se houver propostas) */}
       <div className="proposals-section" style={{ marginTop: '30px' }}>
         <h2 style={{ marginBottom: '20px', fontSize: '1.5rem', color: '#1e293b' }}>
           Propostas Recebidas ({proposals.length})
@@ -126,27 +162,50 @@ export const MissionDetails = ({ mission, user, setPage }) => {
           <div className="proposals-list" style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
             {proposals.map((prop) => (
               <div key={prop.id} className="proposal-item-card" style={{
-                background: 'white',
+                background: prop.status === 'accepted' ? '#f0fdf4' : 'white',
                 padding: '20px',
                 borderRadius: '12px',
-                border: '1px solid #e2e8f0',
-                boxShadow: '0 2px 4px rgba(0,0,0,0.05)'
+                border: prop.status === 'accepted' ? '2px solid #22c55e' : '1px solid #e2e8f0',
+                position: 'relative'
               }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px' }}>
-                  <span style={{ fontWeight: 'bold', color: '#0369a1' }}>Oferta: R$ {prop.price}</span>
-                  <span style={{ fontSize: '0.8rem', color: '#64748b' }}>
+                {prop.status === 'accepted' && (
+                  <span style={{ position: 'absolute', top: '10px', right: '10px', background: '#22c55e', color: 'white', padding: '2px 8px', borderRadius: '4px', fontSize: '0.7rem', fontWeight: 'bold' }}>
+                    ACEITA
+                  </span>
+                )}
+
+                <div style={{ marginBottom: '15px' }}>
+                  <button 
+                    onClick={() => handleViewProfile(prop.user_id)}
+                    style={{ background: 'none', border: 'none', color: '#0369a1', fontWeight: 'bold', cursor: 'pointer', fontSize: '1.1rem', padding: 0, textDecoration: 'underline' }}
+                  >
+                    👤 {prop.profiles?.full_name || 'Usuário Desconhecido'}
+                  </button>
+                  
+                  <div style={{ fontSize: '0.85rem', color: '#64748b', marginTop: '5px' }}>
+                    <p>📧 {prop.profiles?.email || 'E-mail não disponível'}</p>
+                    <p>📞 {prop.profiles?.phone || 'Telefone não disponível'}</p>
+                  </div>
+                </div>
+
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px', borderTop: '1px solid #f1f5f9', paddingTop: '10px' }}>
+                  <span style={{ fontWeight: 'bold', color: '#16a34a' }}>Oferta: R$ {prop.price}</span>
+                  <span style={{ fontSize: '0.8rem', color: '#94a3b8' }}>
                     {new Date(prop.created_at).toLocaleDateString('pt-BR')}
                   </span>
                 </div>
-                <p style={{ color: '#334155', fontSize: '0.95rem', lineHeight: '1.5' }}>"{prop.message}"</p>
                 
-                {isMyMission && !isFinished && (
+                <p style={{ color: '#334155', fontSize: '0.95rem', lineHeight: '1.5', fontStyle: 'italic' }}>
+                  "{prop.message}"
+                </p>
+                
+                {isMyMission && !isFinished && prop.status !== 'accepted' && (
                    <button 
-                    className="btn-secondary-action" 
-                    style={{ marginTop: '15px', padding: '8px 15px', fontSize: '0.85rem' }}
-                    onClick={() => alert("Chat com prestador em breve")}
+                    className="btn-main-action" 
+                    style={{ marginTop: '15px', width: '100%', backgroundColor: '#0f172a' }}
+                    onClick={() => handleAcceptProposal(prop.id)}
                    >
-                     💬 Contatar Prestador
+                     🤝 Aceitar Proposta
                    </button>
                 )}
               </div>

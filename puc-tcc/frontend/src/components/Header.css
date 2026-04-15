@@ -135,3 +135,54 @@
 .logout-opt:hover {
   background-color: #fff5f5 !important; /* Fundo levemente avermelhado no hover do sair */
 }
+
+/* Container do item da lista para suportar o badge */
+.li-with-badge {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  position: relative;
+}
+
+/* O counter vermelho */
+.notif-counter {
+  background-color: #ef4444;
+  color: white;
+  font-size: 11px;
+  font-weight: bold;
+  padding: 2px 6px;
+  border-radius: 10px;
+  min-width: 18px;
+  text-align: center;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+}
+
+/* Pontinho vermelho sobre o avatar do usuário */
+.global-notif-dot {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 10px;
+  height: 10px;
+  background-color: #ef4444;
+  border-radius: 50%;
+  border: 2px solid white;
+  z-index: 2;
+}
+
+.user-menu-container {
+  position: relative;
+}
+
+/* Badge da soma total na Home */
+.global-sum-badge {
+  background-color: #dc2626 !important; /* Um vermelho um pouco mais escuro/intenso */
+  transform: scale(1.1); /* Ligeiramente maior que os outros */
+}
+
+/* Garante que o texto e o badge fiquem alinhados */
+.li-with-badge span {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
