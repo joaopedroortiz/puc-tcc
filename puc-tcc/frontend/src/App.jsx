@@ -3,13 +3,13 @@ import { supabase } from './services/supabaseClient';
 import { Login } from './pages/Login';
 import { Home } from './pages/Home';
 import Navbar from './components/Navbar';
-import { ProfileCard } from './components/Card';
+import { ProfileCard } from './components/Profilecard'; // Ajustado para PascalCase
 import { EditProfile } from './pages/Edit';
 import { CreateMission } from './pages/CreateMission';
-import { MissionDetails } from './pages/MissionDetails'; // Importe a página de detalhes
+import { MissionDetails } from './pages/MissionDetails';
+import { MyMissions } from './pages/MyMissions'; 
 
-// Placeholders para as outras páginas
-const MyMissions = () => <div className="timeline"><h2 className="timeline-title">Minhas Missões</h2><p>Gerencie as missões que você postou.</p></div>;
+// Placeholders restantes
 const MyProposals = () => <div className="timeline"><h2 className="timeline-title">Minhas Propostas</h2><p>Acompanhe os lances que você enviou.</p></div>;
 const Completed = () => <div className="timeline"><h2 className="timeline-title">Concluídos</h2><p>Histórico de serviços finalizados.</p></div>;
 
@@ -17,7 +17,7 @@ function App() {
   const [session, setSession] = useState(null);
   const [city, setCity] = useState('Porto Alegre');
   const [page, setPage] = useState('home');
-  const [selectedMission, setSelectedMission] = useState(null); // Estado para a missão clicada
+  const [selectedMission, setSelectedMission] = useState(null);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -39,29 +39,36 @@ function App() {
             city={city} 
             setPage={setPage} 
             setSelectedMission={setSelectedMission} 
+            user={session?.user} // ADICIONADO: Necessário para a lógica do botão desabilitado
           />
         );
       case 'detalhes-missao':
         return (
           <MissionDetails 
             mission={selectedMission} 
-            user={session.user} 
+            user={session?.user} 
             setPage={setPage} 
           />
         );
       case 'perfil':
-        return <EditProfile user={session.user} />;
+        return <EditProfile user={session?.user} />;
       case 'criar-missao':
         return (
           <CreateMission 
-            user={session.user} 
+            user={session?.user} 
             currentCity={city} 
             setPage={setPage} 
             setGlobalCity={setCity} 
           />
         );
       case 'minhas-missoes':
-        return <MyMissions />;
+        return (
+          <MyMissions 
+            user={session?.user} 
+            setPage={setPage} 
+            setSelectedMission={setSelectedMission} 
+          />
+        );
       case 'minhas-propostas':
         return <MyProposals />;
       case 'concluidos':
@@ -72,6 +79,7 @@ function App() {
             city={city} 
             setPage={setPage} 
             setSelectedMission={setSelectedMission} 
+            user={session?.user} // ADICIONADO: Garantia para o estado padrão
           />
         );
     }
@@ -81,7 +89,6 @@ function App() {
     return <Login />;
   }
 
-  // Páginas que ocupam a largura total (sem o ProfileCard lateral)
   const isFullWidthPage = page === 'perfil' || page === 'criar-missao' || page === 'detalhes-missao';
 
   return (
@@ -91,7 +98,7 @@ function App() {
       <main className={`app-container main-layout ${isFullWidthPage ? 'centered-layout' : ''}`}>
         
         {!isFullWidthPage && (
-          <ProfileCard user={session.user} setPage={setPage} />
+          <ProfileCard user={session?.user} setPage={setPage} />
         )}
 
         <div className="content-area">

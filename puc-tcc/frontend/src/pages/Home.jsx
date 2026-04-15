@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '../services/supabaseClient';
-import { MissionCard } from '../components/Card';
+import { MissionCard } from '../components/Missioncard'; // Nome corrigido
 
-// Adicionamos setSelectedMission aos argumentos para que ele possa ser repassado
-export function Home({ city, setPage, setSelectedMission }) {
+// Adicionamos 'user' às props
+export function Home({ city, setPage, setSelectedMission, user }) {
   const [missions, setMissions] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -40,8 +40,9 @@ export function Home({ city, setPage, setSelectedMission }) {
           <MissionCard 
             key={mission.id} 
             mission={mission} 
+            user={user} // Agora 'user' vem das props da Home
             setPage={setPage} 
-            setSelectedMission={setSelectedMission} // Repassando a função para o card
+            setSelectedMission={setSelectedMission} 
           />
         ))
       ) : (

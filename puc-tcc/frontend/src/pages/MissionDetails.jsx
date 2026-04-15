@@ -7,7 +7,9 @@ export const MissionDetails = ({ mission, user, setPage }) => {
   const [proposalCount, setProposalCount] = useState(0);
   const [loadingCount, setLoadingCount] = useState(true);
 
-  // Efeito para carregar a contagem de propostas
+  // Validação: a missão pertence ao usuário logado?
+  const isMyMission = user?.id === mission?.user_id;
+
   useEffect(() => {
     if (!mission?.id) return;
 
@@ -30,7 +32,6 @@ export const MissionDetails = ({ mission, user, setPage }) => {
     fetchProposalCount();
   }, [mission?.id]);
 
-  // Guarda de renderização: se não houver missão, mostra loading
   if (!mission) {
     return (
       <div className="details-container" style={{textAlign: 'center', padding: '50px'}}>
@@ -49,11 +50,9 @@ export const MissionDetails = ({ mission, user, setPage }) => {
       <div className="details-card">
         <header className="details-header">
           <div className="title-group">
+            {/* Tag exibida apenas se a missão for do usuário */}
+            {isMyMission && <span className="own-mission-tag">SUA MISSÃO</span>}
             <h1>{mission.title}</h1>
-            <span className="status-badge">{mission.status || 'Aberto'}</span>
-          </div>
-          <div className="price-tag">
-            {mission.price ? `R$ ${mission.price}` : 'Valor a combinar'}
           </div>
         </header>
 
@@ -67,12 +66,21 @@ export const MissionDetails = ({ mission, user, setPage }) => {
             <span className="meta-label">📍 LOCALIZAÇÃO</span>
             <span className="meta-value">{mission.neighborhood}, {mission.city}</span>
           </div>
+
+          <div className="meta-box">
+            <span className="meta-label">💰 VALOR ESTIMADO</span>
+            <span className="meta-value">
+              {mission.price ? `R$ ${mission.price}` : 'A combinar'}
+            </span>
+          </div>
+
           <div className="meta-box">
             <span className="meta-label">📊 ENGAJAMENTO</span>
             <span className="meta-value">
               {loadingCount ? 'A carregar...' : `${proposalCount} propostas feitas`}
             </span>
           </div>
+          
           <div className="meta-box">
             <span className="meta-label">🗓️ PUBLICADO EM</span>
             <span className="meta-value">
@@ -82,12 +90,33 @@ export const MissionDetails = ({ mission, user, setPage }) => {
         </div>
 
         <div className="details-actions">
-          <button 
-            className="btn-main-action btn-large" 
-            onClick={() => setIsModalOpen(true)}
-          >
-            Fazer Proposta Agora
-          </button>
+          {isMyMission ? (
+            /* Layout para o dono da missão */
+            <div style={{ display: 'flex', gap: '12px', width: '100%' }}>
+              <button 
+                className="btn-secondary-action" 
+                style={{ flex: 1, padding: '15px' }}
+                onClick={() => alert("Funcionalidade de editar em breve")}
+              >
+                ✏️ Editar Missão
+              </button>
+              <button 
+                className="btn-main-action" 
+                style={{ flex: 1, padding: '15px', backgroundColor: '#16a34a' }}
+                onClick={() => alert("Funcionalidade de finalizar em breve")}
+              >
+                ✅ Finalizar Missão
+              </button>
+            </div>
+          ) : (
+            /* Layout para outros usuários */
+            <button 
+              className="btn-main-action btn-large" 
+              onClick={() => setIsModalOpen(true)}
+            >
+              Fazer Proposta Agora
+            </button>
+          )}
         </div>
       </div>
 

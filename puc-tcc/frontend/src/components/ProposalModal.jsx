@@ -51,7 +51,7 @@ export const ProposalModal = ({ missionId, user, onClose }) => {
               onChange={(e) => setShareContact(e.target.checked)}
               disabled={submitting}
             />
-            Partilhar o meu e-mail e telefone de contacto
+            Partilhar o meu e-mail e telefone de contato
           </label>
 
           <div className="modal-buttons">
