@@ -3,15 +3,15 @@ import { supabase } from './services/supabaseClient';
 import { Login } from './pages/Login';
 import { Home } from './pages/Home';
 import Navbar from './components/Navbar';
-import { ProfileCard } from './components/Profilecard'; // Ajustado para PascalCase
+import { ProfileCard } from './components/Profilecard';
 import { EditProfile } from './pages/Edit';
 import { CreateMission } from './pages/CreateMission';
 import { MissionDetails } from './pages/MissionDetails';
-import { MyMissions } from './pages/MyMissions'; 
+import { MyMissions } from './pages/MyMissions';
+import { Completed } from './pages/Completed'; // Importação do novo componente de concluídos
 
-// Placeholders restantes
+// Placeholders para páginas restantes
 const MyProposals = () => <div className="timeline"><h2 className="timeline-title">Minhas Propostas</h2><p>Acompanhe os lances que você enviou.</p></div>;
-const Completed = () => <div className="timeline"><h2 className="timeline-title">Concluídos</h2><p>Histórico de serviços finalizados.</p></div>;
 
 function App() {
   const [session, setSession] = useState(null);
@@ -39,7 +39,7 @@ function App() {
             city={city} 
             setPage={setPage} 
             setSelectedMission={setSelectedMission} 
-            user={session?.user} // ADICIONADO: Necessário para a lógica do botão desabilitado
+            user={session?.user}
           />
         );
       case 'detalhes-missao':
@@ -72,14 +72,20 @@ function App() {
       case 'minhas-propostas':
         return <MyProposals />;
       case 'concluidos':
-        return <Completed />;
+        return (
+          <Completed 
+            user={session?.user} 
+            setPage={setPage} 
+            setSelectedMission={setSelectedMission} 
+          />
+        );
       default:
         return (
           <Home 
             city={city} 
             setPage={setPage} 
             setSelectedMission={setSelectedMission} 
-            user={session?.user} // ADICIONADO: Garantia para o estado padrão
+            user={session?.user}
           />
         );
     }
@@ -89,7 +95,8 @@ function App() {
     return <Login />;
   }
 
-  const isFullWidthPage = page === 'perfil' || page === 'criar-missao' || page === 'detalhes-missao';
+  // Define quais páginas ocupam a largura total da tela
+  const isFullWidthPage = ['perfil', 'criar-missao', 'detalhes-missao'].includes(page);
 
   return (
     <div className="app-main-wrapper">

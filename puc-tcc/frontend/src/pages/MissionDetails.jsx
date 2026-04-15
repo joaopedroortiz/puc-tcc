@@ -9,6 +9,8 @@ export const MissionDetails = ({ mission, user, setPage }) => {
 
   // Validação: a missão pertence ao usuário logado?
   const isMyMission = user?.id === mission?.user_id;
+  // Validação: a missão já foi finalizada?
+  const isFinished = mission?.is_active === false;
 
   useEffect(() => {
     if (!mission?.id) return;
@@ -32,6 +34,25 @@ export const MissionDetails = ({ mission, user, setPage }) => {
     fetchProposalCount();
   }, [mission?.id]);
 
+  const handleFinalize = async () => {
+    const confirm = window.confirm("Deseja realmente finalizar esta missão? Ela será movida para a seção de concluídos.");
+    if (!confirm) return;
+
+    try {
+      const { error } = await supabase
+        .from('missions')
+        .update({ is_active: false })
+        .eq('id', mission.id);
+
+      if (error) throw error;
+
+      alert("Missão finalizada com sucesso!");
+      setPage('concluidos'); 
+    } catch (error) {
+      alert("Erro ao finalizar missão: " + error.message);
+    }
+  };
+
   if (!mission) {
     return (
       <div className="details-container" style={{textAlign: 'center', padding: '50px'}}>
@@ -50,8 +71,8 @@ export const MissionDetails = ({ mission, user, setPage }) => {
       <div className="details-card">
         <header className="details-header">
           <div className="title-group">
-            {/* Tag exibida apenas se a missão for do usuário */}
             {isMyMission && <span className="own-mission-tag">SUA MISSÃO</span>}
+            {isFinished && <span className="finished-mission-tag">CONCLUÍDA</span>}
             <h1>{mission.title}</h1>
           </div>
         </header>
@@ -90,8 +111,13 @@ export const MissionDetails = ({ mission, user, setPage }) => {
         </div>
 
         <div className="details-actions">
-          {isMyMission ? (
-            /* Layout para o dono da missão */
+          {isFinished ? (
+            /* Se a missão estiver concluída, não mostra botões de ação */
+            <div className="finished-info-box" style={{ textAlign: 'center', width: '100%', padding: '20px', backgroundColor: '#f8fafc', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
+              <p style={{ color: '#64748b', fontWeight: '600' }}>Esta missão foi finalizada e não aceita mais propostas ou edições.</p>
+            </div>
+          ) : isMyMission ? (
+            /* Layout para o dono da missão ativa */
             <div style={{ display: 'flex', gap: '12px', width: '100%' }}>
               <button 
                 className="btn-secondary-action" 
@@ -103,13 +129,13 @@ export const MissionDetails = ({ mission, user, setPage }) => {
               <button 
                 className="btn-main-action" 
                 style={{ flex: 1, padding: '15px', backgroundColor: '#16a34a' }}
-                onClick={() => alert("Funcionalidade de finalizar em breve")}
+                onClick={handleFinalize}
               >
                 ✅ Finalizar Missão
               </button>
             </div>
           ) : (
-            /* Layout para outros usuários */
+            /* Layout para outros usuários em missão ativa */
             <button 
               className="btn-main-action btn-large" 
               onClick={() => setIsModalOpen(true)}
