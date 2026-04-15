@@ -8,10 +8,8 @@ import { EditProfile } from './pages/Edit';
 import { CreateMission } from './pages/CreateMission';
 import { MissionDetails } from './pages/MissionDetails';
 import { MyMissions } from './pages/MyMissions';
-import { Completed } from './pages/Completed'; // Importação do novo componente de concluídos
-
-// Placeholders para páginas restantes
-const MyProposals = () => <div className="timeline"><h2 className="timeline-title">Minhas Propostas</h2><p>Acompanhe os lances que você enviou.</p></div>;
+import { MyProposals } from './pages/MyProposals'; // Importação do novo componente
+import { Completed } from './pages/Completed';
 
 function App() {
   const [session, setSession] = useState(null);
@@ -70,7 +68,13 @@ function App() {
           />
         );
       case 'minhas-propostas':
-        return <MyProposals />;
+        return (
+          <MyProposals 
+            user={session?.user} 
+            setPage={setPage} 
+            setSelectedMission={setSelectedMission} 
+          />
+        );
       case 'concluidos':
         return (
           <Completed 
@@ -95,7 +99,7 @@ function App() {
     return <Login />;
   }
 
-  // Define quais páginas ocupam a largura total da tela
+  // Define quais páginas ocupam a largura total da tela (sem ProfileCard lateral)
   const isFullWidthPage = ['perfil', 'criar-missao', 'detalhes-missao'].includes(page);
 
   return (
