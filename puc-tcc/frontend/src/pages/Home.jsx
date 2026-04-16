@@ -1,19 +1,21 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '../services/supabaseClient';
-import { MissionCard } from '../components/Missioncard'; // Nome corrigido
+import { MissionCard } from '../components/Missioncard';
 
-// Adicionamos 'user' às props
 export function Home({ city, setPage, setSelectedMission, user }) {
   const [missions, setMissions] = useState([]);
   const [loading, setLoading] = useState(true);
 
   const fetchMissions = async () => {
-    setLoading(true);
     try {
       const { data, error } = await supabase
         .from('missions')
-        .select('*') 
+        .select(`
+          *,
+          proposals (*)
+        `) 
         .eq('city', city)
+        .neq('status', 'Finalizada') // 👈 FILTRO: Remove missões concluídas da Home
         .order('created_at', { ascending: false });
 
       if (error) throw error;
@@ -26,6 +28,7 @@ export function Home({ city, setPage, setSelectedMission, user }) {
   };
 
   useEffect(() => {
+    setLoading(true);
     fetchMissions();
   }, [city]);
 
@@ -40,15 +43,16 @@ export function Home({ city, setPage, setSelectedMission, user }) {
           <MissionCard 
             key={mission.id} 
             mission={mission} 
-            user={user} // Agora 'user' vem das props da Home
+            user={user}
             setPage={setPage} 
             setSelectedMission={setSelectedMission} 
+            refreshMissions={fetchMissions} 
           />
         ))
       ) : (
         <div className="empty-msg">
           <p>Ainda não há missões abertas em {city}.</p>
-          <span>Seja o primeiro a publicar uma necessidade!</span>
+          <span>Que tal publicar uma nova necessidade?</span>
         </div>
       )}
     </div>

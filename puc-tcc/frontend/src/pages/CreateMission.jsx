@@ -1,9 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { supabase } from '../services/supabaseClient';
 
-export const CreateMission = ({ user, currentCity, setPage }) => {
+export const CreateMission = ({ user, currentCity, setPage, selectedMission, setSelectedMission }) => {
   const [loading, setLoading] = useState(false);
-  const [images, setImages] = useState([]); // Novo: armazena os arquivos de foto
+  const [images, setImages] = useState([]); // Armazena novos arquivos (File objects)
+  const [existingImages, setExistingImages] = useState([]); // Armazena URLs de imagens que já estão no banco
+  
   const [formData, setFormData] = useState({
     title: '',
     description: '',
@@ -13,26 +15,43 @@ export const CreateMission = ({ user, currentCity, setPage }) => {
     deadline: ''
   });
 
-  // --- FUNÇÕES DE GERENCIAMENTO DE IMAGENS ---
+  // --- LÓGICA DE EDIÇÃO: Preenche o form se houver selectedMission ---
+  useEffect(() => {
+    if (selectedMission) {
+      setFormData({
+        title: selectedMission.title || '',
+        description: selectedMission.description || '',
+        city: selectedMission.city || currentCity,
+        neighborhood: selectedMission.neighborhood || '',
+        expected_value: selectedMission.price || '',
+        deadline: selectedMission.deadline || ''
+      });
+      setExistingImages(selectedMission.images || []);
+    }
+  }, [selectedMission, currentCity]);
+
   const handleFileChange = (files) => {
     const selectedFiles = Array.from(files).filter(file => file.type.startsWith('image/'));
-    
-    if (images.length + selectedFiles.length > 5) {
+    // Soma imagens novas + imagens que já existiam
+    if (images.length + existingImages.length + selectedFiles.length > 5) {
       alert("Você pode adicionar no máximo 5 fotos.");
       return;
     }
     setImages(prev => [...prev, ...selectedFiles]);
   };
 
-  const removeImage = (index) => {
+  const removeNewImage = (index) => {
     setImages(prev => prev.filter((_, i) => i !== index));
+  };
+
+  const removeExistingImage = (index) => {
+    setExistingImages(prev => prev.filter((_, i) => i !== index));
   };
 
   const uploadImagesToStorage = async () => {
     const uploadedUrls = [];
     for (const file of images) {
       const fileExt = file.name.split('.').pop();
-      // Organiza por ID de usuário para manter o Storage limpo
       const fileName = `${user.id}/${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
       
       const { error: uploadError } = await supabase.storage
@@ -42,125 +61,101 @@ export const CreateMission = ({ user, currentCity, setPage }) => {
       if (!uploadError) {
         const { data } = supabase.storage.from('mission_photos').getPublicUrl(fileName);
         uploadedUrls.push(data.publicUrl);
-      } else {
-        console.error("Erro no upload:", uploadError.message);
       }
     }
     return uploadedUrls;
   };
 
-  // --- LÓGICA DE PUBLICAÇÃO ---
   const handlePublish = async (e) => {
     e.preventDefault();
     if (loading) return;
-
     setLoading(true);
 
     try {
-      // 1. Upload das fotos antes de criar a missão
-      let imageUrls = [];
-      if (images.length > 0) {
-        imageUrls = await uploadImagesToStorage();
-      }
+      // 1. Sobe as novas fotos (se houver)
+      const newImageUrls = await uploadImagesToStorage();
+      // 2. Mescla com as URLs das fotos que o usuário não removeu
+      const finalImageUrls = [...existingImages, ...newImageUrls];
 
-      // 2. Inserção no banco
-      const { error } = await supabase
-        .from('missions')
-        .insert([{
-          user_id: user.id,
-          title: formData.title,
-          description: formData.description,
-          city: formData.city,
-          neighborhood: formData.neighborhood,
-          price: formData.expected_value || null,
-          deadline: formData.deadline || null,
-          status: 'Aberto',
-          images: imageUrls // Array de URLs
-        }]);
+      const missionData = {
+        user_id: user.id,
+        title: formData.title,
+        description: formData.description,
+        city: formData.city,
+        neighborhood: formData.neighborhood,
+        price: formData.expected_value || null,
+        deadline: formData.deadline || null,
+        status: selectedMission ? selectedMission.status : 'Aberto',
+        images: finalImageUrls
+      };
+
+      let error;
+      if (selectedMission) {
+        // MODO EDIÇÃO (UPDATE)
+        const { error: updateError } = await supabase
+          .from('missions')
+          .update(missionData)
+          .eq('id', selectedMission.id);
+        error = updateError;
+      } else {
+        // MODO CRIAÇÃO (INSERT)
+        const { error: insertError } = await supabase
+          .from('missions')
+          .insert([missionData]);
+        error = insertError;
+      }
 
       if (error) throw error;
       
-      alert("🚀 Missão publicada com sucesso!");
+      alert(selectedMission ? "✅ Missão atualizada!" : "🚀 Missão publicada!");
       
-      setFormData({
-        title: '', description: '', city: currentCity,
-        neighborhood: '', expected_value: '', deadline: ''
-      });
-      setImages([]);
+      // Limpa tudo e volta pra home
+      if (setSelectedMission) setSelectedMission(null);
       setPage('home'); 
       
     } catch (error) {
-      alert("Erro ao publicar: " + error.message);
+      alert("Erro ao processar: " + error.message);
     } finally {
       setLoading(false);
     }
   };
 
+  const handleCancel = () => {
+    if (setSelectedMission) setSelectedMission(null);
+    setPage('home');
+  };
+
   return (
     <div className="edit-profile-container">
       <div className="edit-profile-card">
-        <h2>🚀 Nova Missão</h2>
-        <p style={{ marginBottom: '20px', color: '#666', fontSize: '0.9rem' }}>
-          Preencha os detalhes abaixo para encontrar ajuda.
-        </p>
+        <h2>{selectedMission ? "📝 Editar Missão" : "🚀 Nova Missão"}</h2>
         
         <form onSubmit={handlePublish}>
-          
-          {/* ÁREA DE FOTOS (DRAG & DROP) */}
           <div className="input-group">
             <label>Fotos da Missão (Máx. 5)</label>
             <div 
               className="drag-drop-zone"
-              onDragOver={(e) => e.preventDefault()}
-              onDrop={(e) => {
-                e.preventDefault();
-                handleFileChange(e.dataTransfer.files);
-              }}
               onClick={() => document.getElementById('file-input').click()}
-              style={{
-                border: '2px dashed #cbd5e1',
-                borderRadius: '12px',
-                padding: '30px',
-                textAlign: 'center',
-                background: '#f8fafc',
-                cursor: 'pointer',
-                marginBottom: '10px',
-                transition: 'all 0.2s'
-              }}
+              style={{ border: '2px dashed #cbd5e1', borderRadius: '12px', padding: '20px', textAlign: 'center', background: '#f8fafc', cursor: 'pointer', marginBottom: '10px' }}
             >
-              <p style={{ color: '#64748b', fontSize: '0.9rem', margin: 0 }}>
-                📸 <strong>Arraste fotos aqui</strong> ou clique para selecionar
-              </p>
-              <input 
-                type="file" 
-                id="file-input" 
-                multiple 
-                accept="image/*" 
-                hidden 
-                onChange={(e) => handleFileChange(e.target.files)} 
-              />
+              <p style={{ color: '#64748b', fontSize: '0.9rem' }}>📸 Clique para adicionar fotos</p>
+              <input type="file" id="file-input" multiple accept="image/*" hidden onChange={(e) => handleFileChange(e.target.files)} />
             </div>
 
-            {/* PREVIEW DAS FOTOS */}
             <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', marginBottom: '20px' }}>
+              {/* Preview de fotos que JÁ ESTÃO no Supabase */}
+              {existingImages.map((url, index) => (
+                <div key={`old-${index}`} style={{ position: 'relative', width: '80px', height: '80px' }}>
+                  <img src={url} alt="existente" style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '8px', border: '2px solid #0369a1' }} />
+                  <button type="button" onClick={() => removeExistingImage(index)} style={{ position: 'absolute', top: '-8px', right: '-8px', background: '#ef4444', color: 'white', border: 'none', borderRadius: '50%', width: '22px', height: '22px', cursor: 'pointer' }}>×</button>
+                </div>
+              ))}
+
+              {/* Preview de fotos NOVAS (blob local) */}
               {images.map((file, index) => (
-                <div key={index} style={{ position: 'relative', width: '80px', height: '80px' }}>
-                  <img 
-                    src={URL.createObjectURL(file)} 
-                    alt="preview" 
-                    style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '8px', border: '1px solid #e2e8f0' }} 
-                  />
-                  <button 
-                    type="button"
-                    onClick={(e) => { e.stopPropagation(); removeImage(index); }}
-                    style={{
-                      position: 'absolute', top: '-8px', right: '-8px',
-                      background: '#ef4444', color: 'white', border: 'none',
-                      borderRadius: '50%', width: '22px', height: '22px', 
-                      cursor: 'pointer', fontSize: '12px', fontWeight: 'bold',
-                      boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
-                    }}
-                  >×</button>
+                <div key={`new-${index}`} style={{ position: 'relative', width: '80px', height: '80px' }}>
+                  <img src={URL.createObjectURL(file)} alt="nova" style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '8px', border: '2px solid #10b981' }} />
+                  <button type="button" onClick={() => removeNewImage(index)} style={{ position: 'absolute', top: '-8px', right: '-8px', background: '#ef4444', color: 'white', border: 'none', borderRadius: '50%', width: '22px', height: '22px', cursor: 'pointer' }}>×</button>
                 </div>
               ))}
             </div>
@@ -168,42 +163,18 @@ export const CreateMission = ({ user, currentCity, setPage }) => {
 
           <div className="input-group">
             <label>Título</label>
-            <input 
-              required
-              type="text" 
-              maxLength={120}
-              value={formData.title}
-              onChange={e => setFormData({...formData, title: e.target.value})}
-              placeholder="Ex: Pintura de fachada" 
-            />
-            <small className="char-counter">
-              {formData.title.length} / 120 caracteres
-            </small>
+            <input required type="text" maxLength={120} value={formData.title} onChange={e => setFormData({...formData, title: e.target.value})} />
           </div>
 
           <div className="input-group">
             <label>Descrição</label>
-            <textarea 
-              required
-              rows="5"
-              maxLength={750}
-              value={formData.description}
-              onChange={e => setFormData({...formData, description: e.target.value})}
-              placeholder="Detalhe o que você precisa..." 
-            />
-            <small className="char-counter">
-              {formData.description.length} / 750 caracteres
-            </small>
+            <textarea required rows="5" maxLength={750} value={formData.description} onChange={e => setFormData({...formData, description: e.target.value})} />
           </div>
 
           <div style={{ display: 'flex', gap: '15px' }}>
             <div className="input-group" style={{ flex: 1 }}>
               <label>Cidade</label>
-              <select 
-                className="city-dropdown"
-                value={formData.city}
-                onChange={e => setFormData({...formData, city: e.target.value})}
-              >
+              <select className="city-dropdown" value={formData.city} onChange={e => setFormData({...formData, city: e.target.value})}>
                 <option value="Porto Alegre">Porto Alegre</option>
                 <option value="Canoas">Canoas</option>
                 <option value="Novo Hamburgo">Novo Hamburgo</option>
@@ -214,56 +185,27 @@ export const CreateMission = ({ user, currentCity, setPage }) => {
             </div>
             <div className="input-group" style={{ flex: 1 }}>
               <label>Bairro</label>
-              <input 
-                required
-                type="text" 
-                value={formData.neighborhood}
-                onChange={e => setFormData({...formData, neighborhood: e.target.value})}
-                placeholder="Ex: Moinhos de Vento" 
-              />
+              <input required type="text" value={formData.neighborhood} onChange={e => setFormData({...formData, neighborhood: e.target.value})} />
             </div>
           </div>
 
           <div style={{ display: 'flex', gap: '15px' }}>
             <div className="input-group" style={{ flex: 1 }}>
-              <label>Valor Esperado (Opcional)</label>
-              <input 
-                type="number" 
-                value={formData.expected_value}
-                onChange={e => setFormData({...formData, expected_value: e.target.value})}
-                placeholder="R$ 0,00" 
-              />
+              <label>Valor Esperado</label>
+              <input type="number" value={formData.expected_value} onChange={e => setFormData({...formData, expected_value: e.target.value})} />
             </div>
             <div className="input-group" style={{ flex: 1 }}>
-              <label>Data Limite (Opcional)</label>
-              <input 
-                type="date" 
-                value={formData.deadline}
-                onChange={e => setFormData({...formData, deadline: e.target.value})}
-              />
+              <label>Data Limite</label>
+              <input type="date" value={formData.deadline} onChange={e => setFormData({...formData, deadline: e.target.value})} />
             </div>
           </div>
 
           <div style={{ marginTop: '10px', display: 'flex', gap: '10px' }}>
-            <button 
-              type="button" 
-              className="btn-secondary-action" 
-              onClick={() => setPage('home')}
-              style={{ flex: 1 }}
-            >
+            <button type="button" className="btn-secondary-action" onClick={handleCancel} style={{ flex: 1 }}>
               Cancelar
             </button>
-            <button 
-              type="submit" 
-              className={`btn-cta ${loading ? 'btn-loading' : ''}`} 
-              disabled={loading}
-              style={{ flex: 2 }}
-            >
-              {loading ? (
-                <span className="spinner-text">Publicando...</span>
-              ) : (
-                "Publicar Missão"
-              )}
+            <button type="submit" className="btn-cta" disabled={loading} style={{ flex: 2 }}>
+              {loading ? "Processando..." : (selectedMission ? "Salvar Alterações" : "Publicar Missão")}
             </button>
           </div>
         </form>

@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { supabase } from './services/supabaseClient';
 import { Login } from './pages/Login';
 import { Home } from './pages/Home';
-import { Navbar } from './components/Navbar'; // Importação corrigida com { }
+import { Navbar } from './components/Navbar'; 
 import { ProfileCard } from './components/Profilecard';
 import { EditProfile } from './pages/Edit';
 import { CreateMission } from './pages/CreateMission';
@@ -20,13 +20,10 @@ function App() {
   const [targetUserId, setTargetUserId] = useState(null);
 
   useEffect(() => {
-    // Busca sessão inicial
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
-      if (session) console.log("Usuário logado:", session.user.id);
     });
 
-    // Escuta mudanças na autenticação
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session);
     });
@@ -52,10 +49,10 @@ function App() {
             user={session?.user} 
             setPage={setPage}
             setTargetUserId={setTargetUserId}
+            setSelectedMission={setSelectedMission} // Adicionado para permitir edição
           />
         );
       case 'perfil':
-        // CORREÇÃO: Adicionado setPage para permitir o redirecionamento após salvar
         return <EditProfile user={session?.user} setPage={setPage} />;
       
       case 'perfil-publico':
@@ -73,6 +70,8 @@ function App() {
             currentCity={city} 
             setPage={setPage} 
             setGlobalCity={setCity} 
+            selectedMission={selectedMission} // 👈 CORREÇÃO: Passando a missão para editar
+            setSelectedMission={setSelectedMission} // 👈 CORREÇÃO: Para limpar após salvar/cancelar
           />
         );
       case 'minhas-missoes':
@@ -115,7 +114,6 @@ function App() {
     return <Login />;
   }
 
-  // Define páginas que ocupam a largura total
   const isFullWidthPage = ['perfil', 'criar-missao', 'detalhes-missao', 'perfil-publico'].includes(page);
 
   return (

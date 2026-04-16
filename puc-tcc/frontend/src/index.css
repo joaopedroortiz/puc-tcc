@@ -334,3 +334,25 @@ margin-bottom: 10px;
 
 .arrow.prev { left: -60px; }
 .arrow.next { right: -60px; }
+
+/* Garante que o container da lista não prenda os elementos */
+.timeline {
+    position: relative;
+    z-index: 1;
+}
+
+/* Quando o modal estiver aberto, o card que o contém DEVE ficar na frente de todos os outros */
+.mission-card:has(.carousel-overlay) {
+    z-index: 9999 !important;
+    opacity: 1 !important; /* Remove a transparência do concluído para o modal brilhar */
+}
+
+/* O overlay precisa ser fixo e muito alto */
+.carousel-overlay {
+    position: fixed; /* Mude de absolute para fixed se ainda estiver como absolute */
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: 99999;
+}

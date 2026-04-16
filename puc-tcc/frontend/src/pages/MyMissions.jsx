@@ -16,6 +16,7 @@ export const MyMissions = ({ user, setPage, setSelectedMission }) => {
           proposals (*) 
         `)
         .eq('user_id', user.id)
+        .neq('status', 'Finalizada') // 👈 CORREÇÃO 1: Filtra para NÃO mostrar as finalizadas aqui
         .order('created_at', { ascending: false });
 
       if (error) throw error;
@@ -31,25 +32,21 @@ export const MyMissions = ({ user, setPage, setSelectedMission }) => {
     if (user?.id) fetchMyMissions();
   }, [user?.id]);
 
-  // FUNÇÃO NOVA: Lógica de "Marcar como Lido" ao clicar
   const handleOpenMission = async (mission) => {
     try {
-      // 1. Atualiza no banco: todas as propostas desta missão que eram 'false' viram 'true'
-      const { error } = await supabase
+      // 1. Atualiza no banco: propostas não lidas viram lidas
+      await supabase
         .from('proposals')
         .update({ is_read: true })
         .eq('mission_id', mission.id)
         .eq('is_read', false);
 
-      if (error) throw error;
-
-      // 2. Atualiza o estado global para a página de detalhes
+      // 2. Navegação
       setSelectedMission(mission);
       setPage('detalhes-missao');
       
     } catch (err) {
       console.error("Erro ao atualizar status de leitura:", err.message);
-      // Mesmo se der erro no update, deixamos o usuário entrar na página
       setSelectedMission(mission);
       setPage('detalhes-missao');
     }
@@ -69,15 +66,15 @@ export const MyMissions = ({ user, setPage, setSelectedMission }) => {
             mission={mission} 
             user={user}
             setPage={setPage} 
-            // Substituímos o setSelectedMission direto pela nossa nova função
+            // CORREÇÃO 2: Passando a missão corretamente para a função de abertura
             setSelectedMission={() => handleOpenMission(mission)} 
           />
         ))
       ) : (
         <div className="empty-msg">
-          <p>Você ainda não publicou nenhuma missão.</p>
+          <p>Você não tem missões em aberto no momento.</p>
           <button className="btn-main-action" onClick={() => setPage('criar-missao')}>
-            Publicar minha primeira missão
+            Publicar nova missão
           </button>
         </div>
       )}
