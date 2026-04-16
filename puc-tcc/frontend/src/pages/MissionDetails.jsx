@@ -13,8 +13,7 @@ export const MissionDetails = ({ mission, user, setPage, setTargetUserId }) => {
   const fetchProposalsData = async () => {
     setLoadingProposals(true);
     try {
-      // Nota: Estamos buscando dados da tabela 'proposals' e fazendo join com 'profiles'
-      // Certifique-se de que sua tabela de perfis se chama 'profiles' no Supabase
+      // 1. ATUALIZADA A QUERY: Agora buscamos os novos campos de empresa do profile
       const { data, error } = await supabase
         .from('proposals')
         .select(`
@@ -27,7 +26,12 @@ export const MissionDetails = ({ mission, user, setPage, setTargetUserId }) => {
           profiles:user_id (
             full_name,
             email,
-            phone
+            phone,
+            is_company,
+            company_name,
+            company_address,
+            business_type,
+            company_email
           )
         `)
         .eq('mission_id', mission.id)
@@ -57,20 +61,16 @@ export const MissionDetails = ({ mission, user, setPage, setTargetUserId }) => {
         .eq('id', proposalId);
 
       if (error) throw error;
-
-      // Opcional: Você pode querer finalizar a missão automaticamente ao aceitar uma proposta
-      // await supabase.from('missions').update({ is_active: false }).eq('id', mission.id);
-
       alert("Proposta aceita com sucesso!");
-      fetchProposalsData(); // Recarrega a lista para mostrar o status atualizado
+      fetchProposalsData();
     } catch (error) {
       alert("Erro ao aceitar proposta: " + error.message);
     }
   };
 
   const handleViewProfile = (userId) => {
-    setTargetUserId(userId); // Seta o ID do usuário que queremos ver
-    setPage('perfil-publico'); // Muda para a página de perfil
+    setTargetUserId(userId);
+    setPage('perfil-publico');
   };
 
   if (!mission) {
@@ -88,6 +88,7 @@ export const MissionDetails = ({ mission, user, setPage, setTargetUserId }) => {
         ← Home
       </button>
 
+      {/* ... Detalhes da Missão (mantido igual) */}
       <div className="details-card">
         <header className="details-header">
           <div className="title-group">
@@ -160,56 +161,78 @@ export const MissionDetails = ({ mission, user, setPage, setTargetUserId }) => {
           <p>Carregando propostas...</p>
         ) : proposals.length > 0 ? (
           <div className="proposals-list" style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
-            {proposals.map((prop) => (
-              <div key={prop.id} className="proposal-item-card" style={{
-                background: prop.status === 'accepted' ? '#f0fdf4' : 'white',
-                padding: '20px',
-                borderRadius: '12px',
-                border: prop.status === 'accepted' ? '2px solid #22c55e' : '1px solid #e2e8f0',
-                position: 'relative'
-              }}>
-                {prop.status === 'accepted' && (
-                  <span style={{ position: 'absolute', top: '10px', right: '10px', background: '#22c55e', color: 'white', padding: '2px 8px', borderRadius: '4px', fontSize: '0.7rem', fontWeight: 'bold' }}>
-                    ACEITA
-                  </span>
-                )}
+            {proposals.map((prop) => {
+              // 2. LÓGICA DE EXIBIÇÃO DE EMPRESA NOS CARDS DE LANCE
+              const p = prop.profiles;
+              const isCompany = p?.is_company;
+              
+              const displayName = (isCompany && p?.company_name) ? p.company_name : (p?.full_name || 'Usuário');
+              const displayEmail = (isCompany && p?.company_email) ? p.company_email : (p?.email || 'E-mail não disponível');
 
-                <div style={{ marginBottom: '15px' }}>
-                  <button 
-                    onClick={() => handleViewProfile(prop.user_id)}
-                    style={{ background: 'none', border: 'none', color: '#0369a1', fontWeight: 'bold', cursor: 'pointer', fontSize: '1.1rem', padding: 0, textDecoration: 'underline' }}
-                  >
-                    👤 {prop.profiles?.full_name || 'Usuário Desconhecido'}
-                  </button>
-                  
-                  <div style={{ fontSize: '0.85rem', color: '#64748b', marginTop: '5px' }}>
-                    <p>📧 {prop.profiles?.email || 'E-mail não disponível'}</p>
-                    <p>📞 {prop.profiles?.phone || 'Telefone não disponível'}</p>
+              return (
+                <div key={prop.id} className="proposal-item-card" style={{
+                  background: prop.status === 'accepted' ? '#f0fdf4' : 'white',
+                  padding: '20px',
+                  borderRadius: '12px',
+                  border: prop.status === 'accepted' ? '2px solid #22c55e' : '1px solid #e2e8f0',
+                  position: 'relative'
+                }}>
+                  {prop.status === 'accepted' && (
+                    <span style={{ position: 'absolute', top: '10px', right: '10px', background: '#22c55e', color: 'white', padding: '2px 8px', borderRadius: '4px', fontSize: '0.7rem', fontWeight: 'bold' }}>
+                      ACEITA
+                    </span>
+                  )}
+
+                  <div style={{ marginBottom: '15px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <button 
+                        onClick={() => handleViewProfile(prop.user_id)}
+                        style={{ background: 'none', border: 'none', color: '#0369a1', fontWeight: 'bold', cursor: 'pointer', fontSize: '1.1rem', padding: 0, textDecoration: 'underline' }}
+                      >
+                        👤 {displayName}
+                      </button>
+                      {isCompany && (
+                        <span style={{ backgroundColor: '#e0f2fe', color: '#0369a1', fontSize: '0.65rem', padding: '2px 6px', borderRadius: '4px', fontWeight: 'bold' }}>
+                          EMPRESA
+                        </span>
+                      )}
+                    </div>
+                    
+                    <div style={{ fontSize: '0.85rem', color: '#64748b', marginTop: '8px' }}>
+                      {isCompany && p?.business_type && (
+                        <p style={{ fontWeight: 'bold', color: '#1e293b' }}>🏢 {p.business_type}</p>
+                      )}
+                      <p>📧 {displayEmail}</p>
+                      <p>📞 {p?.phone || 'Telefone não disponível'}</p>
+                      {isCompany && p?.company_address && (
+                        <p style={{ marginTop: '4px', color: '#475569' }}>📍 {p.company_address}</p>
+                      )}
+                    </div>
                   </div>
-                </div>
 
-                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px', borderTop: '1px solid #f1f5f9', paddingTop: '10px' }}>
-                  <span style={{ fontWeight: 'bold', color: '#16a34a' }}>Oferta: R$ {prop.price}</span>
-                  <span style={{ fontSize: '0.8rem', color: '#94a3b8' }}>
-                    {new Date(prop.created_at).toLocaleDateString('pt-BR')}
-                  </span>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px', borderTop: '1px solid #f1f5f9', paddingTop: '10px' }}>
+                    <span style={{ fontWeight: 'bold', color: '#16a34a' }}>Oferta: R$ {prop.price}</span>
+                    <span style={{ fontSize: '0.8rem', color: '#94a3b8' }}>
+                      {new Date(prop.created_at).toLocaleDateString('pt-BR')}
+                    </span>
+                  </div>
+                  
+                  <p style={{ color: '#334155', fontSize: '0.95rem', lineHeight: '1.5', fontStyle: 'italic' }}>
+                    "{prop.message}"
+                  </p>
+                  
+                  {isMyMission && !isFinished && prop.status !== 'accepted' && (
+                     <button 
+                      className="btn-main-action" 
+                      style={{ marginTop: '15px', width: '100%', backgroundColor: '#0f172a' }}
+                      onClick={() => handleAcceptProposal(prop.id)}
+                     >
+                       🤝 Aceitar Proposta
+                     </button>
+                  )}
                 </div>
-                
-                <p style={{ color: '#334155', fontSize: '0.95rem', lineHeight: '1.5', fontStyle: 'italic' }}>
-                  "{prop.message}"
-                </p>
-                
-                {isMyMission && !isFinished && prop.status !== 'accepted' && (
-                   <button 
-                    className="btn-main-action" 
-                    style={{ marginTop: '15px', width: '100%', backgroundColor: '#0f172a' }}
-                    onClick={() => handleAcceptProposal(prop.id)}
-                   >
-                     🤝 Aceitar Proposta
-                   </button>
-                )}
-              </div>
-            ))}
+              );
+            })}
           </div>
         ) : (
           <div style={{ padding: '30px', textAlign: 'center', background: '#f8fafc', borderRadius: '12px', color: '#64748b' }}>

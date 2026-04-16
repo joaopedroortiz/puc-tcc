@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { supabase } from './services/supabaseClient';
 import { Login } from './pages/Login';
 import { Home } from './pages/Home';
-import {Navbar} from './components/Navbar';
+import { Navbar } from './components/Navbar'; // Importação corrigida com { }
 import { ProfileCard } from './components/Profilecard';
 import { EditProfile } from './pages/Edit';
 import { CreateMission } from './pages/CreateMission';
@@ -10,14 +10,14 @@ import { MissionDetails } from './pages/MissionDetails';
 import { MyMissions } from './pages/MyMissions';
 import { MyProposals } from './pages/MyProposals';
 import { Completed } from './pages/Completed';
-import { PublicProfile } from './pages/PublicProfile.jsx'; // Certifique-se de criar este arquivo
+import { PublicProfile } from './pages/PublicProfile.jsx';
 
 function App() {
   const [session, setSession] = useState(null);
   const [city, setCity] = useState('Porto Alegre');
   const [page, setPage] = useState('home');
   const [selectedMission, setSelectedMission] = useState(null);
-  const [targetUserId, setTargetUserId] = useState(null); // ID do prestador para visualizar perfil
+  const [targetUserId, setTargetUserId] = useState(null);
 
   useEffect(() => {
     // Busca sessão inicial
@@ -51,11 +51,12 @@ function App() {
             mission={selectedMission} 
             user={session?.user} 
             setPage={setPage}
-            setTargetUserId={setTargetUserId} // Necessário para navegar ao perfil do prestador
+            setTargetUserId={setTargetUserId}
           />
         );
       case 'perfil':
-        return <EditProfile user={session?.user} />;
+        // CORREÇÃO: Adicionado setPage para permitir o redirecionamento após salvar
+        return <EditProfile user={session?.user} setPage={setPage} />;
       
       case 'perfil-publico':
         return (
@@ -114,14 +115,11 @@ function App() {
     return <Login />;
   }
 
-  // Define páginas que ocupam a largura total (sem o ProfileCard na lateral)
+  // Define páginas que ocupam a largura total
   const isFullWidthPage = ['perfil', 'criar-missao', 'detalhes-missao', 'perfil-publico'].includes(page);
 
   return (
     <div className="app-main-wrapper">
-      {/* IMPORTANTE: Passamos o 'user' para a Navbar. 
-          Sem isso, as notificações (badges vermelhos) não funcionam! 
-      */}
       <Navbar 
         city={city} 
         setCity={setCity} 
