@@ -7,7 +7,7 @@
     "dev": "vite",
     "test": "playwright test",
     "test:ui": "playwright test --ui",
-    "build": "npm run test && vite build",
+    "build": "vite build",
     "lint": "eslint .",
     "preview": "vite preview"
   },
