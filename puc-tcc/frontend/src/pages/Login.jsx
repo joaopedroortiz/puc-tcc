@@ -18,7 +18,7 @@ export function Login() {
     <div className="login-wrapper">
       <div className="login-modal">
         <header className="login-header">
-          <img src={logoImg} alt="Mission-Based Work" className="login-logo" />
+          <h1 className='login-logo'>WTD</h1>
         </header>
 
         <section className="login-body">

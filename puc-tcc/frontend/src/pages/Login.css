@@ -5,12 +5,20 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  background-color: #E5E2D9; /* Tom cinza bege pastel opaco */
+  background-color: #d4e2f0;
   margin: 0;
   position: fixed;
   top: 0;
   left: 0;
-  z-index: 2000; /* Garante que cubra o Header se ele estiver montado */
+  z-index: 2000;
+}
+
+.logo-button{
+  margin-left: 5px;
+    font-weight: 700;
+    font-size: x-large;
+    color: #415a77;
+    font-family: sans-serif;
 }
 
 .login-modal {
@@ -31,6 +39,10 @@
 .login-logo {
   height: 220px;
   margin-bottom: -170px;
+  font-size: 88px;
+    display: inline-block;
+    color: #415a77;
+    margin-top: 0px;
 }
 
 .login-body h2 {

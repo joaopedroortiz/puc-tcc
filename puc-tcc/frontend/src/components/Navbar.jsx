@@ -67,7 +67,7 @@ export const Navbar = ({ city, setCity, setPage, page, user }) => {
     <header className="main-header">
       <div className="header-content">
         <div className="header-left" onClick={() => setPage('home')} style={{ cursor: 'pointer' }}>
-          <img src={logoImg} alt="Work To Do" className="logo-img" />
+          <span className='logo-button'>WTD</span>
         </div>
 
         <div className="header-right">
